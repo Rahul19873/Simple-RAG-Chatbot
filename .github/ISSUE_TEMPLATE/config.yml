@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Questions & Discussions
+    url: https://github.com/Rahul19873/Simple-RAG-Chatbot/discussions
+    about: Ask questions and share ideas with the community
+  - name: 📖 Documentation
+    url: https://github.com/Rahul19873/Simple-RAG-Chatbot/blob/main/README.md
+    about: Check the README for setup and usage instructions
+  - name: 🔧 Troubleshooting
+    url: https://github.com/Rahul19873/Simple-RAG-Chatbot/blob/main/README.md#-troubleshooting
+    about: Common issues and solutions
