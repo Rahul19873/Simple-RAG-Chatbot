@@ -1,75 +1,108 @@
-from langchain.document_loaders import TextLoader
-from langchain.text_splitter import CharacterTextSplitter
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.vectorstores import Pinecone
-from langchain.llms import HuggingFaceHub
+from langchain_community.document_loaders import TextLoader
+from langchain_text_splitters import CharacterTextSplitter
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.vectorstores import FAISS
+
+from langchain_ollama import ChatOllama
+from langchain_core.prompts import PromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+from langchain_core.output_parsers import StrOutputParser
+
 from dotenv import load_dotenv
-import os
-from pinecone import Pinecone, ServerlessSpec
-from langchain import PromptTemplate
-from langchain.schema.runnable import RunnablePassthrough
-from langchain.schema.output_parser import StrOutputParser
-from langchain.chains import ConversationalRetrievalChain, RetrievalQA
-from langchain_pinecone import PineconeVectorStore
-import ollama
-from openai import OpenAI
-from langchain_openai import ChatOpenAI
 
 
 class ChatBot:
+
     load_dotenv()
+
     def __init__(self):
 
-        # Load and split documents
-        loader = TextLoader('./materials/torontoTravelAssistant.txt')
+        # 1. Load document
+        loader = TextLoader(
+            "./materials/germany_travel_guide.txt"
+        )
+
         documents = loader.load()
-        text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=4)
+
+        # 2. Split document into chunks
+        text_splitter = CharacterTextSplitter(
+            chunk_size=800,
+            chunk_overlap=50
+        )
+
         docs = text_splitter.split_documents(documents)
 
-        # Initialize embeddings
-        embeddings = HuggingFaceEmbeddings()
+        # 3. Create Hugging Face embeddings
+        embeddings = HuggingFaceEmbeddings(
+            model_name="sentence-transformers/all-MiniLM-L6-v2"
+        )
 
-        # Initialize Pinecone instance
-        pc = Pinecone(api_key= os.getenv('PINECONE_API_KEY'))
+        # 4. Create FAISS vector store
+        docsearch = FAISS.from_documents(
+            docs,
+            embeddings
+        )
 
-        index_name = "langchain-demo"
+        # 5. Create retriever
+        retriever = docsearch.as_retriever()
 
-        if index_name not in pc.list_indexes().names():
-            pc.create_index(
-                name=index_name,
-                dimension=768,
-                metric="cosine",
-                spec=ServerlessSpec(
-                    cloud="aws",
-                    region="us-east-1"
-                )            
-            )
-        index = pc.Index(index_name)
-        docsearch = PineconeVectorStore.from_documents(docs, embeddings, index_name=index_name)
+        # 6. Initialize Ollama
+        llm = ChatOllama(
+            model="gemma3",
+            temperature=0
+        )
 
-        # Initialize ChatOpenAI
-        model_name = "gpt-3.5-turbo"
-        llm = ChatOpenAI(model_name=model_name, organization='org-G8UtpAEtkeLatwCgEhQGaPOw')
-
-
-        # Define prompt template
+        # 7. Create prompt
         template = """
-        You are a Toronto travel assistant. Users will ask you questions about their trip to Toronto. Use the following piece of context to answer the question.
-        If you don't know the answer, just say you don't know.
-        Your answer should be short and concise, no longer than 2 sentences.
+        You are a Germany travel assistant.
 
-        Context: {context}
-        Question: {question}
+        Use the following context to answer the question.
+        If you don't know the answer, just say you don't know.
+
+        Your answer should be short and concise,
+        no longer than 2 sentences.
+
+        Context:
+        {context}
+
+        Question:
+        {question}
+
         Answer:
         """
 
-        prompt = PromptTemplate(template=template, input_variables=["context", "question"])
-        
-        self.rag_chain = RetrievalQA.from_chain_type(
-            llm, retriever=docsearch.as_retriever(), chain_type_kwargs={"prompt": prompt}
+        prompt = PromptTemplate(
+            template=template,
+            input_variables=["context", "question"]
         )
 
-        
-# Usage example:
+        # 8. Format retrieved documents
+        def format_docs(docs):
+            return "\n\n".join(
+                doc.page_content for doc in docs
+            )
+
+        # 9. Create RAG chain
+        self.rag_chain = (
+            {
+                "context": retriever | format_docs,
+                "question": RunnablePassthrough()
+            }
+            | prompt
+            | llm
+            | StrOutputParser()
+        )
+
+
+# Test
 if __name__ == "__main__":
+
     chatbot = ChatBot()
+
+    print("Chatbot initialized successfully!")
+
+    response = chatbot.rag_chain.invoke(
+        "What is the capital of Germany?"
+    )
+
+    print("Answer:", response)

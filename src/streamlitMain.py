@@ -1,12 +1,12 @@
 from RAG_ChatBot import ChatBot
 import streamlit as st
-import json
+
 
 
 bot = ChatBot()
     
 
-st.title('Toronto Travel Assistant Bot')
+st.title('Germany Travel assistant bot')
 
 # Function for generating LLM response
 def generate_response(input):
@@ -33,7 +33,7 @@ if st.session_state.messages[-1]["role"] != "assistant":
     with st.chat_message("assistant"):
         with st.spinner("Getting your answer from mystery stuff.."):
             response = generate_response(input) 
-            result_text = response["result"]
+            result_text = response
             st.write(result_text) 
-    message = {"role": "assistant", "content": response["result"]}
+    message = {"role": "assistant", "content": response}
     st.session_state.messages.append(message)
