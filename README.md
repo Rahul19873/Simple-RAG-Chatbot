@@ -112,12 +112,6 @@ Simple-RAG-Chatbot/
 ## 🔌 Configuration
 
 ### Vector Database Setup
-
-**Pinecone:**
-1. Create a free account at [Pinecone](https://www.pinecone.io/)
-2. Create an index for your data
-3. Add your API key to `.env`
-
 **FAISS (Local Alternative):**
 - No external API required
 - Better for privacy-sensitive applications
@@ -139,7 +133,6 @@ llm = HuggingFaceLLM(model_name="model-name", api_key=os.getenv("HUGGINGFACE_API
 Core dependencies listed in `requirements.txt`:
 - `langchain` - RAG framework
 - `streamlit` - Frontend interface
-- `pinecone-client` - Vector DB client
 - `faiss-cpu` or `faiss-gpu` - Local vector search
 - `python-dotenv` - Environment variable management
 - `huggingface-hub` - Hugging Face integration
