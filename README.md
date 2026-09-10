@@ -12,7 +12,7 @@ A domain-specific chatbot application that combines the power of **Large Languag
 
 - 🤖 **RAG-based Architecture**: Combines document retrieval with LLM generation for accurate answers
 - 🚀 **Multiple LLM Support**: Hugging Face models and Gemma via Ollama
-- 🗄️ **Vector Database Integration**: Pinecone for efficient similarity search
+- 🗄️ **Vector Database Integration**: Faiss for efficient similarity search
 - 🎨 **User-Friendly Interface**: Built with Streamlit for easy interaction
 - 📚 **Document-Based Learning**: Feed custom documents for domain-specific responses
 - ⚡ **Fast & Efficient**: Optimized retrieval and response generation
@@ -22,7 +22,7 @@ A domain-specific chatbot application that combines the power of **Large Languag
 | Component | Technology |
 |-----------|----------|
 | **Frontend** | Streamlit |
-| **Vector Database** | Pinecone / FAISS |
+| **Vector Database** |  FAISS |
 | **LLM Framework** | LangChain |
 | **Language Models** | Hugging Face, Gemma (via Ollama) |
 | **Backend** | Python 3.12 |
